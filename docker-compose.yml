@@ -1,0 +1,17 @@
+services:
+  jupyter:
+    # torch 1.7.1 の CPU ホイールは linux/amd64 のみ。Apple Silicon ではエミュレーションで動く。
+    platform: linux/amd64
+    build: .
+    ports:
+      - "8887:8888"
+    environment:
+      # torchtext 0.8 は Field などを legacy へ移す予告を出す。API 自体はノートブックのまま使う。
+      PYTHONWARNINGS: "ignore:.*will be retired soon and moved to torchtext\\.legacy:UserWarning"
+    volumes:
+      - .:/workspace
+      - torch-cache:/root/.cache/torch
+    working_dir: /workspace
+
+volumes:
+  torch-cache:

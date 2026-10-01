@@ -1,0 +1,17 @@
+# ノートブックは torchtext.data.Field / TabularDataset / Iterator を呼ぶ。
+# この API は torchtext 0.9 で legacy に移り、0.12 で削除された。
+# そのまま動く最後の組み合わせが torch 1.7.1 + torchtext 0.8.1。
+torch==1.7.1+cpu
+torchtext==0.8.1
+numpy==1.21.6
+scipy==1.7.3
+# 7-4 は KeyedVectors の .wv を使う。この属性は gensim 4 で削除された。
+gensim==3.8.3
+smart_open==5.2.1
+spacy==3.4.4
+janome==0.4.2
+mecab-python3==1.0.9
+jupyterlab==4.2.5
+ipykernel==6.29.5
+# torchtext の import が tqdm を読み、ipywidgets が無いと TqdmWarning が出る。
+ipywidgets==8.1.3
