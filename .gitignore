@@ -4,6 +4,7 @@ data/vector_neologd/
 data/wiki-news-300d-1M.vec
 data/aclImdb_v1.tar.gz
 data/20170201.tar.bz2
+data/*.partial
 data/vector_neologd.zip
 data/wiki-news-300d-1M.vec.zip
 data/japanese_word2vec_vectors.vec
