@@ -32,7 +32,14 @@ RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git /tmp
     && rm -rf /tmp/mecab-ipadic-neologd
 
 COPY requirements.txt /tmp/requirements.txt
+# gensim 3.8.3 には Python 3.9 向け wheel がない。
+# ビルドを隔離すると NumPy 2 が入り、同梱の C 拡張がコンパイルに失敗する。
 RUN pip install --no-cache-dir --default-timeout=300 --retries 10 \
+        "numpy==1.21.6" "scipy==1.7.3" "smart_open==5.2.1" "six==1.17.0" \
+    && pip install --no-cache-dir --default-timeout=300 --retries 10 \
+        --no-build-isolation \
+        "gensim==3.8.3" "numpy==1.21.6" "scipy==1.7.3" "smart_open==5.2.1" \
+    && pip install --no-cache-dir --default-timeout=300 --retries 10 \
         -r /tmp/requirements.txt \
         --extra-index-url https://download.pytorch.org/whl/cpu \
     && rm /tmp/requirements.txt
