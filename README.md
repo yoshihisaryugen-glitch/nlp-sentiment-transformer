@@ -47,6 +47,7 @@ docker compose down
 | `7-4_vectorize.ipynb` | 日本語と英語の学習済み単語ベクトルを読み込む |
 | `7-4-2_vectorize.ipynb` | 7-4 と同じ処理を、今の Dataset と辞書で書く |
 | `7-5_IMDb_Dataset_DataLoader.ipynb` | IMDb から DataLoader を作る |
+| `7-5-2_IMDb_Dataset_DataLoader.ipynb` | 7-5 と同じ処理を、今の Dataset と DataLoader で書く |
 | `7-6_Transformer.ipynb` | Transformer の各層を確認する |
 | `7-7_transformer_training_inference.ipynb` | 感情分析モデルを学習して推論する |
 
