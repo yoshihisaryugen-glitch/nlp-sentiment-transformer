@@ -49,6 +49,7 @@ docker compose down
 | `7-5_IMDb_Dataset_DataLoader.ipynb` | IMDb から DataLoader を作る |
 | `7-5_2_IMDb_Dataset_DataLoader.ipynb` | 7-5 と同じ処理を、今の Dataset と DataLoader で書く |
 | `7-6_Transformer.ipynb` | Transformer の各層を確認する |
+| `7-6_2_Transformer.ipynb` | 7-6 と同じ層の確認を、今の Dataset と DataLoader で書く |
 | `7-7_transformer_training_inference.ipynb` | 感情分析モデルを学習して推論する |
 | `7-7_2_transformer_training_inference.ipynb` | 7-7 と同じ学習と推論を、今の Dataset と DataLoader で書く |
 
