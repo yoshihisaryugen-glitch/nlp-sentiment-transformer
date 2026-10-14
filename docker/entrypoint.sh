@@ -13,14 +13,32 @@ os.makedirs(data_dir, exist_ok=True)
 
 def download(url, dest):
     print("Downloading", url, flush=True)
-
-    def reporthook(block, block_size, total):
-        if total <= 0 or block % 2000 != 0:
-            return
-        done = min(block * block_size, total)
-        print(f"  {done // (1024 * 1024)} / {total // (1024 * 1024)} MB", flush=True)
-
-    urllib.request.urlretrieve(url, dest, reporthook)
+    partial = dest + ".partial"
+    request = urllib.request.Request(url, headers={"User-Agent": "nlp-sentiment-transformer"})
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response, open(partial, "wb") as out:
+            total = int(response.headers.get("Content-Length") or 0)
+            done = 0
+            next_report = 0
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+                done += len(chunk)
+                if total and done >= next_report:
+                    print(
+                        f"  {done // (1024 * 1024)} / {total // (1024 * 1024)} MB",
+                        flush=True,
+                    )
+                    next_report = done + 16 * 1024 * 1024
+        if total and done != total:
+            raise IOError(f"incomplete download: {done} bytes, expected {total}")
+        os.replace(partial, dest)
+    except BaseException:
+        if os.path.exists(partial):
+            os.remove(partial)
+        raise
 
 
 def extract_tar(archive_path, dest_dir):
@@ -35,35 +53,44 @@ def extract_zip(archive_path, dest_dir):
         archive.extractall(dest_dir)
 
 
-entity_bin = os.path.join(data_dir, "entity_vector", "entity_vector.model.bin")
-if not os.path.exists(entity_bin):
-    archive = os.path.join(data_dir, "20170201.tar.bz2")
-    if not os.path.exists(archive):
-        download(
-            "https://www.cl.ecei.tohoku.ac.jp/~m-suzuki/jawiki_vector/data/20170201.tar.bz2",
-            archive,
-        )
-    extract_tar(archive, data_dir)
+def prepare(url, archive_path, marker, extract):
+    if os.path.exists(marker):
+        return
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            if not os.path.exists(archive_path):
+                download(url, archive_path)
+            extract(archive_path, data_dir)
+            if not os.path.exists(marker):
+                raise RuntimeError("extracted archive did not create " + marker)
+            return
+        except Exception as exc:
+            last_error = exc
+            print(f"Prepare failed ({attempt}/3): {exc}", flush=True)
+            if os.path.exists(archive_path):
+                os.remove(archive_path)
+    raise last_error
 
-fasttext_vec = os.path.join(data_dir, "wiki-news-300d-1M.vec")
-if not os.path.exists(fasttext_vec):
-    archive = os.path.join(data_dir, "wiki-news-300d-1M.vec.zip")
-    if not os.path.exists(archive):
-        download(
-            "https://dl.fbaipublicfiles.com/fasttext/vectors-english/wiki-news-300d-1M.vec.zip",
-            archive,
-        )
-    extract_zip(archive, data_dir)
 
-imdb_dir = os.path.join(data_dir, "aclImdb")
-if not os.path.isdir(imdb_dir):
-    archive = os.path.join(data_dir, "aclImdb_v1.tar.gz")
-    if not os.path.exists(archive):
-        download(
-            "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-            archive,
-        )
-    extract_tar(archive, data_dir)
+prepare(
+    "https://www.cl.ecei.tohoku.ac.jp/~m-suzuki/jawiki_vector/data/20170201.tar.bz2",
+    os.path.join(data_dir, "20170201.tar.bz2"),
+    os.path.join(data_dir, "entity_vector", "entity_vector.model.bin"),
+    extract_tar,
+)
+prepare(
+    "https://dl.fbaipublicfiles.com/fasttext/vectors-english/wiki-news-300d-1M.vec.zip",
+    os.path.join(data_dir, "wiki-news-300d-1M.vec.zip"),
+    os.path.join(data_dir, "wiki-news-300d-1M.vec"),
+    extract_zip,
+)
+prepare(
+    "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+    os.path.join(data_dir, "aclImdb_v1.tar.gz"),
+    os.path.join(data_dir, "aclImdb"),
+    extract_tar,
+)
 
 neologd_vec = os.path.join(data_dir, "vector_neologd")
 neologd_zip = os.path.join(data_dir, "vector_neologd.zip")
